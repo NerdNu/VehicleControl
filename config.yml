@@ -1,0 +1,34 @@
+debug:
+  configuration: false
+  overhead: true
+  break-vehicle: false
+  exempt-vehicle: false
+
+# Settings affecting the scan for vehicles (boats and carts).
+scan:
+  period-seconds: 310
+  worlds:
+  - world
+  - world_nether
+  - world_the_end
+
+# Settings that apply to boats and carts.
+vehicles:
+  # Remove the vehicle when the player exits.
+  remove-on-exit: false
+
+  drop-item: true
+  break-empty: true
+  break-empty-seconds: 300
+
+  # Break vehicles with specific passenger mob types.
+  break-with-passenger: false
+  break-with-passenger-seconds: 900
+  break-with-passenger-types:
+  - VILLAGER
+
+  # Exempt (from breaking) vehicles with passenger mobs of these types if the
+  # mobs are named.
+  exempt-with-named-passenger: true
+  exempt-with-named-passenger-types: []
+

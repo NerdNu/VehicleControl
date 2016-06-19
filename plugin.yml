@@ -1,0 +1,19 @@
+name: ${project.name}
+version: ${project.version}
+author: totemo
+authors: [totemo]
+description: ${project.description}
+website: ${project.url}
+main: nu.nerd.vc.VehicleControl
+
+permissions:
+  vehiclecontrol.admin:
+    description: Permission to administer the plugin.
+    default: op
+
+commands:
+  vehiclecontrol:
+    description: ${project.name} administrative command.
+    permission: vehiclecontrol.admin
+    usage: |
+      /<command> reload: Reload the configuration.
