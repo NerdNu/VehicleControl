@@ -7,8 +7,6 @@ Features
 --------
 The features of `VehicleControl` are a superset of equivalent, active
 features that were removed from [`KitchenSink`](https://github.com/NerdNu/KitchenSink).
-The option to remove special carts (chest, furnace and hopper carts) was not
-implemented as it is no longer used on an nerd.nu servers.
 
  * Optionally break carts and boats when the player exits them.
  * Break empty passenger mincarts and boats after they have existed for a
@@ -16,6 +14,9 @@ implemented as it is no longer used on an nerd.nu servers.
  * Optionally break passenger carts containing configured mob types.
  * Optionally exempt from breaking passenger carts containing configured mob
    types that have been named.
+
+The option to remove special carts (chest, furnace and hopper carts) was not
+implemented as it is no longer used on any nerd.nu servers.
 
 
 Principle
