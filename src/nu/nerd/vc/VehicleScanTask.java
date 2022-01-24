@@ -58,7 +58,7 @@ public class VehicleScanTask implements Runnable {
      * Perform all required tasks in the specified world.
      *
      * @param world the affected world.
-     * @param now the current system time.
+     * @param now   the current system time.
      */
     protected void scanWorld(World world, long now) {
         for (Boat boat : world.getEntitiesByClass(Boat.class)) {
@@ -76,7 +76,7 @@ public class VehicleScanTask implements Runnable {
      * required.
      *
      * @param vehicle the vehicle.
-     * @param now the current system time.
+     * @param now     the current system time.
      */
     protected void checkVehicle(Vehicle vehicle, long now) {
         VehicleMetadata meta = getVehicleMetadata(vehicle);
@@ -233,9 +233,10 @@ public class VehicleScanTask implements Runnable {
      * Look up table mapping TreeSpecies ordinal (boat type) to corresponding
      * dropped boat item type.
      */
-    private static final Material BOAT_DROP_TABLE[] = { Material.BOAT, Material.BOAT_SPRUCE,
-                                                       Material.BOAT_BIRCH, Material.BOAT_JUNGLE,
-                                                       Material.BOAT_ACACIA, Material.BOAT_DARK_OAK };
+    private static final Material BOAT_DROP_TABLE[] = {
+        Material.ACACIA_BOAT, Material.BIRCH_BOAT,
+        Material.DARK_OAK_BOAT, Material.JUNGLE_BOAT,
+        Material.OAK_BOAT, Material.SPRUCE_BOAT };
 
     /**
      * Metadata key for storing the VehicleMetadata on a vehicle.
