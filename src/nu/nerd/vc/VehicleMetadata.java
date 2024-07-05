@@ -65,7 +65,6 @@ public class VehicleMetadata extends MetadataValueAdapter {
      */
     public boolean isOccupied() {
         return _occupied;
-
     }
 
     // --------------------------------------------------------------------
