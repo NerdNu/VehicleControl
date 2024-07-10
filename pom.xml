@@ -4,7 +4,7 @@
 	<groupId>nu.nerd</groupId>
 	<name>VehicleControl</name>
 	<artifactId>${project.name}</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<packaging>jar</packaging>
 	<description>Automatically break boats and minecarts.</description>
 	<url>https://github.com/NerdNu/${project.name}</url>
@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.18.1-R0.1-SNAPSHOT</version>
+			<version>1.20-R0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>

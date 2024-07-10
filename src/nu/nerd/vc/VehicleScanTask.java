@@ -1,15 +1,14 @@
 package nu.nerd.vc;
 
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.entity.Boat;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Vehicle;
+import org.bukkit.block.Chest;
+import org.bukkit.entity.*;
 import org.bukkit.entity.minecart.RideableMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
@@ -143,21 +142,29 @@ public class VehicleScanTask implements Runnable {
         if (VehicleControl.CONFIG.VEHICLES_DROP_ITEM) {
             if (vehicle.getType() == EntityType.BOAT) {
                 Boat boat = (Boat) vehicle;
-                dropMaterial = BOAT_DROP_TABLE[boat.getWoodType().ordinal()];
+                dropMaterial = BOAT_DROP_TABLE[boat.getBoatType().getMaterial().ordinal() - 36];
+            } else if (vehicle.getType() == EntityType.CHEST_BOAT) {
+                ChestBoat chestboat = (ChestBoat) vehicle;
+                if(chestboat.getInventory().isEmpty()) {
+                    dropMaterial = BOAT_DROP_TABLE[chestboat.getBoatType().getMaterial().ordinal() - 36];
+                }
             } else if (vehicle.getType() == EntityType.MINECART) {
                 dropMaterial = Material.MINECART;
             }
 
-            world.dropItem(loc, new ItemStack(dropMaterial, 1));
+            if(dropMaterial!= null) {
+                world.dropItem(loc, new ItemStack(dropMaterial, 1));
+                if(vehicle.getType() == EntityType.CHEST_BOAT) {
+                    world.dropItem(loc, new ItemStack(Material.CHEST, 1));
+                }
+            }
         }
 
-        if (VehicleControl.CONFIG.DEBUG_BREAK_VEHICLE) {
+        if (VehicleControl.CONFIG.DEBUG_BREAK_VEHICLE && dropMaterial != null) {
             StringBuilder message = new StringBuilder();
             message.append("Breaking ").append(vehicle.getType().name());
             message.append(" at ").append(formatLoc(loc));
-            if (dropMaterial != null) {
-                message.append(" dropping ").append(dropMaterial.name());
-            }
+            message.append(" dropping ").append(dropMaterial.name());
             Entity passenger = vehicle.getPassenger();
             if (passenger == null) {
                 message.append(", no passenger");
@@ -166,7 +173,9 @@ public class VehicleScanTask implements Runnable {
             }
             VehicleControl.PLUGIN.getLogger().info(message.toString());
         }
-        vehicle.remove();
+        if(dropMaterial != null) {
+            vehicle.remove();
+        }
     } // breakVehicle
 
     // ------------------------------------------------------------------------
@@ -234,9 +243,12 @@ public class VehicleScanTask implements Runnable {
      * dropped boat item type.
      */
     private static final Material BOAT_DROP_TABLE[] = {
-        Material.ACACIA_BOAT, Material.BIRCH_BOAT,
-        Material.DARK_OAK_BOAT, Material.JUNGLE_BOAT,
-        Material.OAK_BOAT, Material.SPRUCE_BOAT };
+            Material.OAK_BOAT, Material.SPRUCE_BOAT,
+            Material.BIRCH_BOAT, Material.JUNGLE_BOAT,
+            Material.ACACIA_BOAT, Material.CHERRY_BOAT,
+            Material.DARK_OAK_BOAT, Material.MANGROVE_BOAT,
+            Material.BAMBOO_RAFT
+    };
 
     /**
      * Metadata key for storing the VehicleMetadata on a vehicle.
