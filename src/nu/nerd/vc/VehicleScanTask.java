@@ -9,7 +9,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.*;
+import org.bukkit.entity.minecart.CommandMinecart;
+import org.bukkit.entity.minecart.HopperMinecart;
 import org.bukkit.entity.minecart.RideableMinecart;
+import org.bukkit.entity.minecart.StorageMinecart;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 
@@ -79,7 +82,7 @@ public class VehicleScanTask implements Runnable {
      */
     protected void checkVehicle(Vehicle vehicle, long now) {
         VehicleMetadata meta = getVehicleMetadata(vehicle);
-        Entity passenger = vehicle.getPassenger();
+        List<Entity> passenger = vehicle.getPassengers();
         if (meta == null) {
             // If not tagged, tag the vehicle if it will break and we're done.
             if (vehicle.isEmpty()) {
@@ -98,10 +101,19 @@ public class VehicleScanTask implements Runnable {
                     StringBuilder message = new StringBuilder();
                     message.append("Exempted ").append(vehicle.getType().name());
                     message.append(" at ").append(formatLoc(vehicle.getLocation()));
-                    message.append(", passenger ").append(passenger.getType().name());
-                    String customName = passenger.getCustomName();
-                    if (customName != null) {
-                        message.append(" custom name \"").append(customName).append("\"");
+                    message.append(", passengers ");
+                    for (int i = 0; i < passenger.size(); i++) {
+                        Entity p = passenger.get(i);
+                        message.append(p.getType().name());
+
+                        String customName = p.getCustomName();
+                        if (customName != null && !customName.isEmpty()) {
+                            message.append("(").append(customName).append(")");
+                        }
+
+                        if (i < passenger.size() - 1) {
+                            message.append(", ");
+                        }
                     }
                     VehicleControl.PLUGIN.getLogger().info(message.toString());
                 }
@@ -109,24 +121,37 @@ public class VehicleScanTask implements Runnable {
         } else {
             // Vehicle is already tagged.
             if (now >= meta.getTimeOut()) {
-                if (passenger == null) {
-                    // Currently empty and timed out.
+                if (passenger.isEmpty()) {
                     breakVehicle(vehicle);
-                } else if (isBreakable(passenger)) {
+                } else if (hasBreakablePassenger(passenger)) {
                     if (meta.isOccupied()) {
-                        // Still occupied by a breakable passenger.
                         breakVehicle(vehicle);
                     } else {
-                        // Extend timeout: passenger boarded since tagging.
                         meta.update(true, now + MILLIS * VehicleControl.CONFIG.VEHICLES_BREAK_WITH_PASSENGER_SECONDS);
                     }
                 } else {
-                    // Passenger doesn't allow break. Remove timeout.
+                    // No passengers allow break. Remove timeout.
                     vehicle.removeMetadata(VEHICLE_META_KEY, VehicleControl.PLUGIN);
                 }
             }
         }
     } // processVehicle
+
+    // ------------------------------------------------------------------------
+
+    /**
+     * Checks if any passengers of a vehicle are breakable.
+     * @param passengers the list of passengers.
+     * @return true if it has a breakable passenger, false if not.
+     */
+    private boolean hasBreakablePassenger(List<Entity> passengers) {
+        for (Entity p : passengers) {
+            if (isBreakable(p)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // ------------------------------------------------------------------------
     /**
@@ -138,42 +163,42 @@ public class VehicleScanTask implements Runnable {
         Location loc = vehicle.getLocation();
         World world = loc.getWorld();
 
-        Material dropMaterial = null;
-        if (VehicleControl.CONFIG.VEHICLES_DROP_ITEM) {
-            if (vehicle.getType() == EntityType.BOAT) {
-                Boat boat = (Boat) vehicle;
-                dropMaterial = BOAT_DROP_TABLE[boat.getBoatType().getMaterial().ordinal() - 36];
-            } else if (vehicle.getType() == EntityType.CHEST_BOAT) {
-                ChestBoat chestboat = (ChestBoat) vehicle;
-                if(chestboat.getInventory().isEmpty()) {
-                    dropMaterial = BOAT_DROP_TABLE[chestboat.getBoatType().getMaterial().ordinal() - 36];
-                }
-            } else if (vehicle.getType() == EntityType.MINECART) {
-                dropMaterial = Material.MINECART;
-            }
-
-            if(dropMaterial!= null) {
-                world.dropItem(loc, new ItemStack(dropMaterial, 1));
-                if(vehicle.getType() == EntityType.CHEST_BOAT) {
-                    world.dropItem(loc, new ItemStack(Material.CHEST, 1));
-                }
+        ItemStack vehicleItem = null;
+        if(VehicleControl.CONFIG.VEHICLES_DROP_ITEM) {
+            if(vehicle instanceof Boat boat) {
+                if(boat instanceof ChestBoat chestBoat && !chestBoat.getInventory().isEmpty()) return;
+                vehicleItem = boat.getPickItemStack();
+            } else if(vehicle instanceof Minecart minecart) {
+                if(minecart instanceof HopperMinecart hopperMinecart && !hopperMinecart.isEmpty()) return;
+                if(minecart instanceof StorageMinecart  || minecart instanceof CommandMinecart) return;
+                vehicleItem = minecart.getPickItemStack();
             }
         }
 
-        if (VehicleControl.CONFIG.DEBUG_BREAK_VEHICLE && dropMaterial != null) {
+        if(vehicleItem != null) {
+            world.dropItem(loc, vehicleItem);
+        }
+
+        if (VehicleControl.CONFIG.DEBUG_BREAK_VEHICLE && vehicleItem != null) {
             StringBuilder message = new StringBuilder();
             message.append("Breaking ").append(vehicle.getType().name());
             message.append(" at ").append(formatLoc(loc));
-            message.append(" dropping ").append(dropMaterial.name());
-            Entity passenger = vehicle.getPassenger();
-            if (passenger == null) {
-                message.append(", no passenger");
+            message.append(" dropping ").append(vehicleItem.getItemMeta().itemName());
+            List<Entity> passenger = vehicle.getPassengers();
+            if (passenger.isEmpty()) {
+                message.append(", no passengers");
             } else {
-                message.append(", passenger ").append(passenger.getType().name());
+                message.append(", passengers ");
+                for (int i = 0; i < passenger.size(); i++) {
+                    message.append(passenger.get(i).getType().name());
+                    if (i < passenger.size() - 1) {
+                        message.append(", ");
+                    }
+                }
             }
             VehicleControl.PLUGIN.getLogger().info(message.toString());
         }
-        if(dropMaterial != null) {
+        if(vehicleItem != null) {
             vehicle.remove();
         }
     } // breakVehicle
