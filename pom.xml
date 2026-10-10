@@ -4,7 +4,7 @@
 	<groupId>nu.nerd</groupId>
 	<name>VehicleControl</name>
 	<artifactId>${project.name}</artifactId>
-	<version>1.2.2</version>
+	<version>1.2.3</version>
 	<packaging>jar</packaging>
 	<description>Automatically break boats and minecarts.</description>
 	<url>https://github.com/NerdNu/${project.name}</url>

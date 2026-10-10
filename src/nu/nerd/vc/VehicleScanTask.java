@@ -163,6 +163,8 @@ public class VehicleScanTask implements Runnable {
         Location loc = vehicle.getLocation();
         World world = loc.getWorld();
 
+        if(vehicle.customName() != null) return;
+
         ItemStack vehicleItem = null;
         if(VehicleControl.CONFIG.VEHICLES_DROP_ITEM) {
             if(vehicle instanceof Boat boat) {
